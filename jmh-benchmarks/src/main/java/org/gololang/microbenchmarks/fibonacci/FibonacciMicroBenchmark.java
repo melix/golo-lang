@@ -23,6 +23,7 @@ import org.openjdk.jmh.annotations.*;
 
 import javax.script.Invocable;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.invoke.MethodType.genericMethodType;
@@ -58,6 +59,36 @@ public class FibonacciMicroBenchmark {
     @Setup(Level.Trial)
     public void prepare() {
       fib = new CodeLoader().groovy("Fibonacci", "fib", genericMethodType(1));
+    }
+  }
+
+  @State(Scope.Thread)
+  static public class GroovyPrimitiveState {
+    MethodHandle fib;
+
+    @Setup(Level.Trial)
+    public void prepare() {
+      fib = new CodeLoader().groovy("FibonacciPrimitive", "fib", MethodType.methodType(Long.TYPE, Long.TYPE));
+    }
+  }
+
+  @State(Scope.Thread)
+  static public class GroovyIndyPrimitiveState {
+    MethodHandle fib;
+
+    @Setup(Level.Trial)
+    public void prepare() {
+      fib = new CodeLoader().groovy_indy("FibonacciPrimitive", "fib", MethodType.methodType(Long.TYPE, Long.TYPE));
+    }
+  }
+
+  @State(Scope.Thread)
+  static public class GroovyPrimitiveCSState {
+    MethodHandle fib;
+
+    @Setup(Level.Trial)
+    public void prepare() {
+      fib = new CodeLoader().groovy("FibonacciPrimitiveCS", "fib", MethodType.methodType(Long.TYPE, Long.TYPE));
     }
   }
 
@@ -129,6 +160,22 @@ public class FibonacciMicroBenchmark {
   }
 
   @Benchmark
+  public long groovy_primitive(State30 state30, GroovyPrimitiveState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state30.n);
+  }
+
+  @Benchmark
+  public long groovy_primitive_cs(State30 state30, GroovyPrimitiveCSState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state30.n);
+  }
+
+  @Benchmark
+  public long groovy_indy_primitive_30(State30 state30, GroovyIndyPrimitiveState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state30.n);
+  }
+
+
+  @Benchmark
   public Object clojure_30(State30 state30, ClojureState clojureState) {
     return clojureState.fib.invoke(state30.n);
   }
@@ -169,6 +216,21 @@ public class FibonacciMicroBenchmark {
   @Benchmark
   public Object groovy_indy_40(State40 state40, GroovyIndyState groovyState) throws Throwable {
     return groovyState.fib.invokeExact((Object) state40.n);
+  }
+
+  @Benchmark
+  public long groovy_primitive_40(State40 state40, GroovyPrimitiveState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state40.n);
+  }
+
+  @Benchmark
+  public long groovy_primitive_cs_40(State40 state40, GroovyPrimitiveCSState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state40.n);
+  }
+
+  @Benchmark
+  public long groovy_indy_primitive_40(State40 state40, GroovyIndyPrimitiveState groovyState) throws Throwable {
+    return (long) groovyState.fib.invokeExact(state40.n);
   }
 
   @Benchmark
